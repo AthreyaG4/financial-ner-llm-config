@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root-app
+  # This is the namespace ArgoCD itself lives in - NOT where child apps get
+  # deployed (each child Application still sets its own destination.namespace).
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/AthreyaG4/financial-ner-llm-config.git
+    targetRevision: main
+    # Watches this same folder - including this file itself. That's
+    # intentional (the standard "App of Apps" structure), not an oversight -
+    # see the explanation in PROJECT context. Any future Application (vllm,
+    # eso, aws-load-balancer-controller, etc.) just needs its YAML dropped
+    # in this folder and committed - no manual kubectl ever needed for it.
+    path: argocd-apps
+  destination:
+    server: https://kubernetes.default.svc
+    # Applications are cluster-scoped-ish resources that live in the argocd
+    # namespace specifically (not the app namespace) - matches where the
+    # backend/frontend/ingress Application objects themselves live.
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
