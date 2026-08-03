@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+spec:
+  # ClusterIP for now - swap to a LoadBalancer/Ingress once the exposure
+  # method is decided; frontend is the user-facing entry point so it will
+  # need external access eventually, unlike the vLLM service.
+  type: ClusterIP
+  selector:
+    app: frontend
+  ports:
+    - port: 80
+      targetPort: 80

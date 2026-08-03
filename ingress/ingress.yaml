@@ -1,0 +1,34 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: financial-ner-llm
+spec:
+  # TODO: "nginx" matches minikube's `ingress-nginx` addon's default
+  # IngressClass name. On EKS with the AWS Load Balancer Controller this
+  # needs to change (typically "alb") - another thing that has to match
+  # between this repo and whatever the Infra Repo sets up.
+  ingressClassName: nginx
+  rules:
+    # TODO: on minikube, map this host to `minikube ip`'s output in your
+    # hosts file. On EKS this becomes whatever real domain you point at the
+    # ALB (or its raw DNS name, via `kubectl get ingress`).
+    - host: app.local
+      http:
+        paths:
+          # More specific path first - nginx-ingress actually sorts by
+          # specificity internally regardless of order, but keeping it
+          # explicit here for readability.
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 8000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80

@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          # NOTE: :latest is only for the very first manual apply, before CI has
+          # ever run. Every push after that should have this bumped to the
+          # commit-SHA tag by the CI pipeline - never leave this on :latest.
+          image: 186189159492.dkr.ecr.eu-west-1.amazonaws.com/financial-ner-llm-backend:latest
+          ports:
+            - containerPort: 8000
+          envFrom:
+            # Create this out-of-band, e.g.:
+            #   kubectl create secret generic backend-secrets --from-env-file=backend/.env
+            # Never commit the actual values to this repo.
+            - secretRef:
+                name: backend-secrets
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
