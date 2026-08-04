@@ -14,10 +14,6 @@ spec:
       labels:
         app: backend
     spec:
-      # minikube only - node has no AWS IAM identity, unlike EKS worker nodes
-      # which pull from ECR natively via their node IAM role.
-      imagePullSecrets:
-        - name: ecr-secret
       containers:
         - name: backend
           # NOTE: :latest is only for the very first manual apply, before CI has
@@ -27,9 +23,10 @@ spec:
           ports:
             - containerPort: 8000
           envFrom:
-            # Create this out-of-band, e.g.:
-            #   kubectl create secret generic backend-secrets --from-env-file=backend/.env
-            # Never commit the actual values to this repo.
+            # Populated automatically by External Secrets Operator from AWS
+            # Secrets Manager - see external-secrets/backend-external-secret.yaml.
+            # No manual `kubectl create secret` needed (and never commit
+            # actual values to this repo).
             - secretRef:
                 name: backend-secrets
           readinessProbe:

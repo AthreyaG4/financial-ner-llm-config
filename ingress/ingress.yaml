@@ -2,22 +2,26 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: financial-ner-llm
+  annotations:
+    # Tells the AWS Load Balancer Controller (not nginx) to provision a
+    # real internet-facing ALB for this Ingress, routing directly to pod
+    # IPs via the VPC CNI rather than through NodePorts.
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
 spec:
-  # TODO: "nginx" matches minikube's `ingress-nginx` addon's default
-  # IngressClass name. On EKS with the AWS Load Balancer Controller this
-  # needs to change (typically "alb") - another thing that has to match
-  # between this repo and whatever the Infra Repo sets up.
-  ingressClassName: nginx
+  # Matches the AWS Load Balancer Controller's IngressClass (installed via
+  # argocd-apps/aws-load-balancer-controller-application.yaml) - was
+  # "nginx" for minikube's ingress-nginx addon, now "alb" for EKS.
+  ingressClassName: alb
   rules:
-    # TODO: on minikube, map this host to `minikube ip`'s output in your
-    # hosts file. On EKS this becomes whatever real domain you point at the
-    # ALB (or its raw DNS name, via `kubectl get ingress`).
-    - host: app.local
-      http:
+    # No `host` set - hits the ALB's own auto-generated DNS name directly
+    # (check `kubectl get ingress` after this syncs). Add a `host:` back
+    # here once you point a real domain at the ALB via Route53.
+    - http:
         paths:
-          # More specific path first - nginx-ingress actually sorts by
-          # specificity internally regardless of order, but keeping it
-          # explicit here for readability.
+          # More specific path first - the AWS Load Balancer Controller
+          # sorts by specificity internally regardless of order, but
+          # keeping it explicit here for readability.
           - path: /api
             pathType: Prefix
             backend:

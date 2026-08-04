@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eso
+  namespace: argocd
+  annotations:
+    # Wave 0 (default, set explicitly for documentation) - must install
+    # before external-secrets-config-application (wave 1), since that
+    # Application applies ExternalSecret/ClusterSecretStore custom
+    # resources whose CRDs this Helm chart is what actually creates.
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    # A Helm chart repo, not a git path - different source shape than
+    # backend/frontend/ingress, which point at folders inside this same repo.
+    repoURL: https://charts.external-secrets.io
+    chart: external-secrets
+    targetRevision: 0.10.4 # verify against the latest release before installing: https://github.com/external-secrets/external-secrets/releases
+    helm:
+      values: |
+        installCRDs: true
+        serviceAccount:
+          create: true
+          name: external-secrets
+          annotations:
+            # From `terraform output eso_role_arn` in Infra Repo - paste the
+            # real value here once the cluster and IRSA role actually exist.
+            eks.amazonaws.com/role-arn: "arn:aws:iam::<ACCOUNT_ID>:role/financial-ner-llm-eso-role"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: external-secrets
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

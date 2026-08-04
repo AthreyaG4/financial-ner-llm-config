@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aws-load-balancer-controller
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://aws.github.io/eks-charts
+    chart: aws-load-balancer-controller
+    targetRevision: 3.5.0
+    helm:
+      values: |
+        # Must exactly match the EKS cluster's real name - same gotcha as
+        # the kubernetes.io/cluster/* subnet tags in Infra Repo's
+        # subnets.tf. The controller uses this to filter which subnets/
+        # resources belong to it.
+        clusterName: financial-ner-llm
+        serviceAccount:
+          create: true
+          name: aws-load-balancer-controller
+          annotations:
+            # From `terraform output lb_controller_role_arn` in Infra Repo.
+            eks.amazonaws.com/role-arn: "arn:aws:iam::<ACCOUNT_ID>:role/financial-ner-llm-lb-controller-role"
+        # region/vpcId deliberately omitted - the controller auto-detects
+        # both from the node's EC2 instance metadata. Only set these
+        # explicitly if that auto-detection ever fails.
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

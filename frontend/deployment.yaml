@@ -14,10 +14,6 @@ spec:
       labels:
         app: frontend
     spec:
-      # minikube only - node has no AWS IAM identity, unlike EKS worker nodes
-      # which pull from ECR natively via their node IAM role.
-      imagePullSecrets:
-        - name: ecr-secret
       containers:
         - name: frontend
           # NOTE: :latest is only for the very first manual apply, before CI has
