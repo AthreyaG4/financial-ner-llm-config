@@ -22,9 +22,12 @@ spec:
           annotations:
             # From `terraform output lb_controller_role_arn` in Infra Repo.
             eks.amazonaws.com/role-arn: "arn:aws:iam::186189159492:role/financial-ner-llm-lb-controller-role"
-        # region/vpcId deliberately omitted - the controller auto-detects
-        # both from the node's EC2 instance metadata. Only set these
-        # explicitly if that auto-detection ever fails.
+        # Set explicitly - IMDS auto-detection failed in practice (default
+        # IMDS hop limit is 1, which doesn't survive the extra network hop
+        # from inside a pod, so the metadata call times out and the
+        # controller can't start). Must match Infra Repo's vpc.tf/variables.tf.
+        region: eu-west-1
+        vpcId: vpc-015cc159b0b8f25d9
   destination:
     server: https://kubernetes.default.svc
     namespace: kube-system
