@@ -19,7 +19,7 @@ spec:
           # NOTE: :latest is only for the very first manual apply, before CI has
           # ever run. Every push after that should have this bumped to the
           # commit-SHA tag by the CI pipeline - never leave this on :latest.
-          image: 186189159492.dkr.ecr.eu-west-1.amazonaws.com/financial-ner-llm-backend:latest
+          image: 186189159492.dkr.ecr.eu-west-1.amazonaws.com/financial-ner-llm-backend:059bdf562253df799ba198bcdc5a89f7fde9eafb
           ports:
             - containerPort: 8000
           envFrom:
