@@ -21,7 +21,7 @@ spec:
           name: aws-load-balancer-controller
           annotations:
             # From `terraform output lb_controller_role_arn` in Infra Repo.
-            eks.amazonaws.com/role-arn: "arn:aws:iam::<ACCOUNT_ID>:role/financial-ner-llm-lb-controller-role"
+            eks.amazonaws.com/role-arn: "arn:aws:iam::186189159492:role/financial-ner-llm-lb-controller-role"
         # region/vpcId deliberately omitted - the controller auto-detects
         # both from the node's EC2 instance metadata. Only set these
         # explicitly if that auto-detection ever fails.

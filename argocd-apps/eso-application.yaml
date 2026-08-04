@@ -26,7 +26,7 @@ spec:
           annotations:
             # From `terraform output eso_role_arn` in Infra Repo - paste the
             # real value here once the cluster and IRSA role actually exist.
-            eks.amazonaws.com/role-arn: "arn:aws:iam::<ACCOUNT_ID>:role/financial-ner-llm-eso-role"
+            eks.amazonaws.com/role-arn: "arn:aws:iam::186189159492:role/financial-ner-llm-eso-role"
   destination:
     server: https://kubernetes.default.svc
     namespace: external-secrets
