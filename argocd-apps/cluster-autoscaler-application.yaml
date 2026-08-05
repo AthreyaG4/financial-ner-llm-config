@@ -15,13 +15,21 @@ spec:
           clusterName: financial-ner-llm
         awsRegion: eu-west-1
         cloudProvider: aws
-        serviceAccount:
-          create: true
-          name: cluster-autoscaler
-          annotations:
-            # From `terraform output cluster_autoscaler_role_arn` in Infra Repo -
-            # paste the real value here once applied.
-            eks.amazonaws.com/role-arn: "arn:aws:iam::186189159492:role/financial-ner-llm-cluster-autoscaler-role"
+        # NOTE: this chart nests ServiceAccount config under rbac.serviceAccount,
+        # not a top-level serviceAccount key - a top-level key is silently
+        # ignored (no error), which is exactly what happened here originally:
+        # it created an auto-named SA with no IRSA annotation, so the pod had
+        # no AWS credentials at all (NoCredentialProviders crash). Verified
+        # against `helm show values cluster-autoscaler --repo
+        # https://kubernetes.github.io/autoscaler --version 9.37.0`.
+        rbac:
+          serviceAccount:
+            create: true
+            name: cluster-autoscaler
+            annotations:
+              # From `terraform output cluster_autoscaler_role_arn` in Infra Repo -
+              # paste the real value here once applied.
+              eks.amazonaws.com/role-arn: "arn:aws:iam::186189159492:role/financial-ner-llm-cluster-autoscaler-role"
         extraArgs:
           # Node group ASGs are discovered by the k8s.io/cluster-autoscaler/*
           # tags Infra Repo's gpu node group sets - not by listing node group
