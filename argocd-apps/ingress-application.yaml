@@ -5,6 +5,15 @@ metadata:
   # This is the namespace ArgoCD itself lives in - NOT where the app gets
   # deployed (that's spec.destination.namespace below).
   namespace: argocd
+  annotations:
+    # Wave 3 - deliberately isolated after the eso(0)/external-secrets-
+    # config(1)/backend(2) chain, not because ingress depends on them, but
+    # the reverse: ingress's health depends on the ALB actually finishing
+    # provisioning, which can take a while. If it shared wave 0 with eso,
+    # a slow/stuck ALB would block external-secrets-config and backend
+    # from ever getting their turn, since root-app waits for a whole wave
+    # to be Healthy before starting the next one.
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   project: default
   sources:

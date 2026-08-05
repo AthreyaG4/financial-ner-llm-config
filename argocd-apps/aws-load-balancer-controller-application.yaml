@@ -32,7 +32,7 @@ spec:
         # auto-discovery (FailedBuildModel: "Evaluated 0 subnets" - it was
         # filtering DescribeSubnets by a VPC ID that no longer existed).
         # Re-check against `terraform output vpc_id` if this ever recurs.
-        vpcId: vpc-00963af74e3904acf
+        vpcId: vpc-0b8e5606fe05c7b56
   destination:
     server: https://kubernetes.default.svc
     namespace: kube-system

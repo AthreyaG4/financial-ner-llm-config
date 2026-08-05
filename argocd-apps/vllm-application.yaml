@@ -5,6 +5,13 @@ metadata:
   # This is the namespace ArgoCD itself lives in - NOT where the app gets
   # deployed (that's spec.destination.namespace below).
   namespace: argocd
+  annotations:
+    # Wave 3 - same reasoning as ingress-application.yaml: vllm has no
+    # dependency on eso/external-secrets-config/backend, but its pod can
+    # sit Progressing for a long time (or indefinitely) waiting on the GPU
+    # node group to scale up from 0. Isolated to a late wave so that
+    # doesn't block the secrets chain from ever getting its turn.
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   project: default
   source:
