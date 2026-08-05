@@ -36,6 +36,14 @@ spec:
           # names here, so this works for the GPU group without further config.
           balance-similar-node-groups: false
           skip-nodes-with-system-pods: false
+          # Default (true) blocks removing ANY node hosting a pod with local
+          # (emptyDir) storage, cluster-wide - not just ArgoCD's. That was
+          # blocking the CPU node group from ever scaling down: it's always
+          # one pod per node (argocd-repo-server, argocd-server), so both
+          # nodes were permanently "unremovable" regardless of idle time.
+          # Safe to disable here since nothing in this cluster keeps real
+          # state in emptyDir - that's what PVCs are for.
+          skip-nodes-with-local-storage: false
   destination:
     server: https://kubernetes.default.svc
     namespace: kube-system
