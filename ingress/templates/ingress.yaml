@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: financial-ner-llm
+  name: {{ .Values.global.projectName }}
   annotations:
     # Tells the AWS Load Balancer Controller (not nginx) to provision a
     # real internet-facing ALB for this Ingress, routing directly to pod
@@ -26,13 +26,13 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: backend
+                name: {{ .Values.backend.service }}
                 port:
-                  number: 8000
+                  number: {{ .Values.backend.port }}
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: frontend
+                name: {{ .Values.frontend.service }}
                 port:
-                  number: 80
+                  number: {{ .Values.frontend.port }}

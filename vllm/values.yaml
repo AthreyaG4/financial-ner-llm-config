@@ -1,0 +1,58 @@
+replicas: 1
+
+image:
+  # Pulled directly from Docker Hub - this isn't our own image (unlike
+  # backend/frontend), so there's no ECR/CI tag-bump pipeline for it. Pin an
+  # explicit version and re-verify against the latest release before bumping:
+  # https://github.com/vllm-project/vllm/pkgs/container/vllm-openai
+  repository: vllm/vllm-openai
+  tag: "v0.6.3"
+
+# TODO: placeholder model so this is schedulable and testable end-to-end
+# (GPU node comes up, device plugin exposes nvidia.com/gpu, pod actually
+# runs) before a real model is decided on. facebook/opt-125m is small,
+# ungated, and needs no HF_TOKEN. Swap this - and re-check resources.*
+# below, which are sized for this tiny model, not a real one - before this
+# serves real traffic.
+model: facebook/opt-125m
+
+service:
+  port: 8000
+
+# GPU is an integer/extended resource in k8s - requests and limits must be
+# equal (you can't overcommit or "burst" it like cpu/memory).
+resources:
+  requests:
+    cpu: "2"
+    memory: 8Gi
+    nvidia.com/gpu: 1
+  limits:
+    cpu: "4"
+    memory: 14Gi
+    nvidia.com/gpu: 1
+
+# Matches the workload=gpu taint/label Infra Repo's gpu node group sets.
+# nodeSelector targets this node group specifically; the toleration is what
+# actually lets the pod land on it despite the taint (see
+# nvidia-device-plugin-application.yaml for the same pairing).
+nodeSelector:
+  workload: gpu
+
+tolerations:
+  - key: workload
+    operator: Equal
+    value: gpu
+    effect: NoSchedule
+
+probes:
+  # Generous delays - model loading (even this small one) takes real time,
+  # and a real model would take considerably longer. Re-tune once a real
+  # model is in place.
+  readiness:
+    path: /health
+    initialDelaySeconds: 60
+    periodSeconds: 15
+  liveness:
+    path: /health
+    initialDelaySeconds: 90
+    periodSeconds: 20

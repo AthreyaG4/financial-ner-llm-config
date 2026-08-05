@@ -1,0 +1,40 @@
+# global.* is normally supplied by ../global-values.yaml via the Application's
+# valueFiles ref - the defaults below only matter for standalone `helm template`.
+global:
+  awsAccountId: ""
+  awsRegion: ""
+  projectName: ""
+
+replicas: 1
+
+image:
+  # :latest is only for the very first manual apply, before CI has ever run.
+  # Every push after that should have this bumped to the commit-SHA tag by
+  # the CI pipeline - never leave this on :latest.
+  tag: 059bdf562253df799ba198bcdc5a89f7fde9eafb
+
+service:
+  port: 8000
+
+# Must match the name the external-secrets chart's ExternalSecret targets
+# (see external-secrets/values.yaml backendSecret.name) - separate Helm
+# releases, so this isn't wired automatically and has to match by convention.
+secretName: backend-secrets
+
+probes:
+  readiness:
+    path: /api/health
+    initialDelaySeconds: 5
+    periodSeconds: 10
+  liveness:
+    path: /api/health
+    initialDelaySeconds: 10
+    periodSeconds: 20
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

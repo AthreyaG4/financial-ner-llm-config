@@ -1,0 +1,18 @@
+# global.* is normally supplied by ../global-values.yaml via the Application's
+# valueFiles ref - the defaults below only matter for standalone `helm template`.
+global:
+  awsRegion: ""
+  projectName: ""
+
+secretStore:
+  name: aws-secrets-manager
+
+backendSecret:
+  # Must match the name backend/values.yaml's secretName expects in its
+  # envFrom.secretRef - separate Helm releases, so this isn't wired
+  # automatically and has to match by convention.
+  name: backend-secrets
+  # Combined with global.projectName to form the Secrets Manager key,
+  # e.g. "financial-ner-llm/backend" - matches the eso IAM policy's
+  # resource scope (financial-ner-llm/*) in Infra Repo's irsa.tf.
+  secretsManagerKey: backend

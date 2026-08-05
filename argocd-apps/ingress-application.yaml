@@ -7,10 +7,16 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  source:
-    repoURL: https://github.com/AthreyaG4/financial-ner-llm-config.git
-    targetRevision: main
-    path: ingress
+  sources:
+    - repoURL: https://github.com/AthreyaG4/financial-ner-llm-config.git
+      targetRevision: main
+      path: ingress
+      helm:
+        valueFiles:
+          - $values/global-values.yaml
+    - repoURL: https://github.com/AthreyaG4/financial-ner-llm-config.git
+      targetRevision: main
+      ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: financial-ner-llm

@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nvidia-device-plugin
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://nvidia.github.io/k8s-device-plugin
+    chart: nvidia-device-plugin
+    targetRevision: 0.16.2 # verify against the latest release before installing: https://github.com/NVIDIA/k8s-device-plugin/releases
+    helm:
+      values: |
+        # Without this toleration the plugin's DaemonSet can't schedule
+        # onto the GPU node at all - it's tainted workload=gpu:NoSchedule
+        # (Infra Repo's gpu node group) specifically to keep everything
+        # else off it.
+        tolerations:
+          - key: workload
+            operator: Equal
+            value: gpu
+            effect: NoSchedule
+        # Without this the DaemonSet would still try (and pointlessly no-op)
+        # on every CPU node too - the taint only repels non-matching pods,
+        # it doesn't restrict where a DaemonSet is willing to try.
+        nodeSelector:
+          workload: gpu
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

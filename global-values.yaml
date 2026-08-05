@@ -1,0 +1,13 @@
+# Shared across our own charts (backend, frontend, ingress, external-secrets)
+# via each Application's multi-source `valueFiles: [$values/global-values.yaml]`
+# in argocd-apps/. Change these here once instead of per-chart.
+#
+# NOT consumed by the eso / aws-load-balancer-controller Applications - those
+# use third-party charts with their own values schema, and argocd-apps/ itself
+# isn't Helm-templated, so their account_id/region/vpc_id stay inline in
+# argocd-apps/eso-application.yaml and argocd-apps/aws-load-balancer-controller-application.yaml.
+# Keep those in sync with this file by hand if these values ever change.
+global:
+  awsAccountId: "186189159492"
+  awsRegion: eu-west-1
+  projectName: financial-ner-llm

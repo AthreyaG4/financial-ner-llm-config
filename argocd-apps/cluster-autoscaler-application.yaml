@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cluster-autoscaler
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://kubernetes.github.io/autoscaler
+    chart: cluster-autoscaler
+    targetRevision: 9.37.0 # verify against the latest release before installing: https://github.com/kubernetes/autoscaler/releases
+    helm:
+      values: |
+        autoDiscovery:
+          clusterName: financial-ner-llm
+        awsRegion: eu-west-1
+        cloudProvider: aws
+        serviceAccount:
+          create: true
+          name: cluster-autoscaler
+          annotations:
+            # From `terraform output cluster_autoscaler_role_arn` in Infra Repo -
+            # paste the real value here once applied.
+            eks.amazonaws.com/role-arn: "arn:aws:iam::186189159492:role/financial-ner-llm-cluster-autoscaler-role"
+        extraArgs:
+          # Node group ASGs are discovered by the k8s.io/cluster-autoscaler/*
+          # tags Infra Repo's gpu node group sets - not by listing node group
+          # names here, so this works for the GPU group without further config.
+          balance-similar-node-groups: false
+          skip-nodes-with-system-pods: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

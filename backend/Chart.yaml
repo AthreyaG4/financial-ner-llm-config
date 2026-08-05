@@ -1,0 +1,4 @@
+apiVersion: v2
+name: backend
+description: Financial NER LLM backend API
+version: 0.1.0

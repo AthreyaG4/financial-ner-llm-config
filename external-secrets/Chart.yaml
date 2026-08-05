@@ -1,0 +1,4 @@
+apiVersion: v2
+name: external-secrets-config
+description: ClusterSecretStore and ExternalSecrets for financial-ner-llm (consumes CRDs installed by the eso Application)
+version: 0.1.0

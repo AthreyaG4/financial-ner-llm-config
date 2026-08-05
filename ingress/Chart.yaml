@@ -1,0 +1,4 @@
+apiVersion: v2
+name: ingress
+description: Financial NER LLM ALB ingress
+version: 0.1.0

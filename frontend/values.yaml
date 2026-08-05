@@ -1,0 +1,37 @@
+# global.* is normally supplied by ../global-values.yaml via the Application's
+# valueFiles ref - the defaults below only matter for standalone `helm template`.
+global:
+  awsAccountId: ""
+  awsRegion: ""
+  projectName: ""
+
+replicas: 1
+
+image:
+  # :latest is only for the very first manual apply, before CI has ever run.
+  # Every push after that should have this bumped to the commit-SHA tag by
+  # the CI pipeline - never leave this on :latest. Also remember
+  # VITE_API_BASE_URL is baked into this image at build time - rebuilding is
+  # required if the backend's URL ever changes.
+  tag: 059bdf562253df799ba198bcdc5a89f7fde9eafb
+
+service:
+  port: 80
+
+probes:
+  readiness:
+    path: /
+    initialDelaySeconds: 3
+    periodSeconds: 10
+  liveness:
+    path: /
+    initialDelaySeconds: 5
+    periodSeconds: 20
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi

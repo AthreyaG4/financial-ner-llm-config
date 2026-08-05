@@ -5,13 +5,25 @@ metadata:
   # This is the namespace ArgoCD itself lives in - NOT where the app gets
   # deployed (that's spec.destination.namespace below).
   namespace: argocd
+  annotations:
+    # Wave 2 - must sync after external-secrets-config (wave 1) has actually
+    # created the backend-secrets K8s Secret, or these pods come up in
+    # CreateContainerConfigError (envFrom references a Secret that doesn't
+    # exist yet). Was previously unset (defaulting to wave 0, the same wave
+    # as eso) which raced the secret's creation.
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   project: default
-  source:
-    # TODO: replace with the real remote once Config Repo is pushed to GitHub
-    repoURL: https://github.com/AthreyaG4/financial-ner-llm-config.git
-    targetRevision: main
-    path: backend
+  sources:
+    - repoURL: https://github.com/AthreyaG4/financial-ner-llm-config.git
+      targetRevision: main
+      path: backend
+      helm:
+        valueFiles:
+          - $values/global-values.yaml
+    - repoURL: https://github.com/AthreyaG4/financial-ner-llm-config.git
+      targetRevision: main
+      ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: financial-ner-llm

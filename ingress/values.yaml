@@ -1,0 +1,12 @@
+# global.* is normally supplied by ../global-values.yaml via the Application's
+# valueFiles ref - the defaults below only matter for standalone `helm template`.
+global:
+  projectName: ""
+
+backend:
+  service: backend
+  port: 8000
+
+frontend:
+  service: frontend
+  port: 80

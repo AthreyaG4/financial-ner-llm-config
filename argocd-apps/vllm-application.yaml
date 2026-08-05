@@ -1,22 +1,16 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: frontend
+  name: vllm
   # This is the namespace ArgoCD itself lives in - NOT where the app gets
   # deployed (that's spec.destination.namespace below).
   namespace: argocd
 spec:
   project: default
-  sources:
-    - repoURL: https://github.com/AthreyaG4/financial-ner-llm-config.git
-      targetRevision: main
-      path: frontend
-      helm:
-        valueFiles:
-          - $values/global-values.yaml
-    - repoURL: https://github.com/AthreyaG4/financial-ner-llm-config.git
-      targetRevision: main
-      ref: values
+  source:
+    repoURL: https://github.com/AthreyaG4/financial-ner-llm-config.git
+    targetRevision: main
+    path: vllm
   destination:
     server: https://kubernetes.default.svc
     namespace: financial-ner-llm

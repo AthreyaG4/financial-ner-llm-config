@@ -1,0 +1,4 @@
+apiVersion: v2
+name: frontend
+description: Financial NER LLM frontend
+version: 0.1.0
