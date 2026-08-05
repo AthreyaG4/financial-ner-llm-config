@@ -27,7 +27,12 @@ spec:
         # from inside a pod, so the metadata call times out and the
         # controller can't start). Must match Infra Repo's vpc.tf/variables.tf.
         region: eu-west-1
-        vpcId: vpc-015cc159b0b8f25d9
+        # Was vpc-015cc159b0b8f25d9 - went stale after the VPC got
+        # recreated (new ID from Terraform), which broke subnet
+        # auto-discovery (FailedBuildModel: "Evaluated 0 subnets" - it was
+        # filtering DescribeSubnets by a VPC ID that no longer existed).
+        # Re-check against `terraform output vpc_id` if this ever recurs.
+        vpcId: vpc-00963af74e3904acf
   destination:
     server: https://kubernetes.default.svc
     namespace: kube-system
