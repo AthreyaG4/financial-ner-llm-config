@@ -14,6 +14,15 @@ metadata:
     # from ever getting their turn, since root-app waits for a whole wave
     # to be Healthy before starting the next one.
     argocd.argoproj.io/sync-wave: "3"
+  # Without this, `kubectl delete application ingress` only removes ArgoCD's
+  # tracking of it - the actual Ingress object (and therefore the ALB the
+  # AWS Load Balancer Controller created for it) would be left behind,
+  # orphaned. With it, deleting the Application blocks until the Ingress
+  # itself is pruned, which is what the Makefile's `destroy` target relies
+  # on to guarantee the ALB is gone before terraform destroy ever runs -
+  # otherwise it races an ALB still holding ENIs in the VPC's subnets.
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   sources:
