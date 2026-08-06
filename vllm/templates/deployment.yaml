@@ -14,6 +14,15 @@ spec:
       labels:
         app: vllm
     spec:
+      # Kubernetes auto-injects Docker-links-style env vars for every
+      # Service in this namespace into every pod, following the pattern
+      # <SERVICE_NAME>_PORT. Our own Service is named "vllm", so it injects
+      # VLLM_PORT=tcp://<ip>:8000 - which collides with an env var vLLM
+      # itself reads internally (for engine multiprocessing IPC, unrelated
+      # to the API server's --port flag) expecting a bare integer. vLLM
+      # crashes trying to int() the URL. Nothing here relies on these
+      # legacy env vars - services are addressed by DNS everywhere else.
+      enableServiceLinks: false
       nodeSelector:
         {{- toYaml .Values.nodeSelector | nindent 8 }}
       tolerations:
