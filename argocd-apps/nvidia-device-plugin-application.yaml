@@ -25,6 +25,29 @@ spec:
         # it doesn't restrict where a DaemonSet is willing to try.
         nodeSelector:
           workload: gpu
+        # The chart's own default affinity (see its values.yaml) requires a
+        # Node Feature Discovery label - feature.node.kubernetes.io/pci-
+        # 10de.present, nvidia.com/gpu.present, etc - that only gets set if
+        # NFD/GPU Feature Discovery is running in the cluster, which it
+        # isn't here. Left as default, the DaemonSet's desired count sits
+        # at 0 on every node, nodeSelector/tolerations above notwithstanding
+        # - this was blocking vLLM with "Insufficient nvidia.com/gpu" since
+        # the plugin never actually ran anywhere to advertise it.
+        # nodeSelectorTerms is a list, so this replaces it wholesale rather
+        # than merging (setting affinity: {} would NOT work - Helm deep-
+        # merges maps, so an empty map override leaves the chart's nested
+        # defaults untouched). Our own nodeSelector above already reliably
+        # restricts this to the GPU node group, so NFD's job is redundant
+        # here - this just needs to stop requiring a label nothing sets.
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: kubernetes.io/os
+                      operator: In
+                      values:
+                        - linux
   destination:
     server: https://kubernetes.default.svc
     namespace: kube-system
