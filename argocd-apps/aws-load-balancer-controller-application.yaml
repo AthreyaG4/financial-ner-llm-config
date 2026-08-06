@@ -22,17 +22,18 @@ spec:
           annotations:
             # From `terraform output lb_controller_role_arn` in Infra Repo.
             eks.amazonaws.com/role-arn: "arn:aws:iam::186189159492:role/financial-ner-llm-lb-controller-role"
-        # Set explicitly - IMDS auto-detection failed in practice (default
-        # IMDS hop limit is 1, which doesn't survive the extra network hop
-        # from inside a pod, so the metadata call times out and the
-        # controller can't start). Must match Infra Repo's vpc.tf/variables.tf.
-        region: eu-west-1
-        # Was vpc-015cc159b0b8f25d9 - went stale after the VPC got
-        # recreated (new ID from Terraform), which broke subnet
-        # auto-discovery (FailedBuildModel: "Evaluated 0 subnets" - it was
-        # filtering DescribeSubnets by a VPC ID that no longer existed).
-        # Re-check against `terraform output vpc_id` if this ever recurs.
-        vpcId: vpc-0b8e5606fe05c7b56
+        # region/vpcId deliberately NOT set here anymore - they used to be
+        # hardcoded because IMDS auto-detection failed (default IMDS hop
+        # limit of 1 doesn't survive the extra network hop from inside a
+        # pod, so the metadata call timed out). That's now fixed at the
+        # node level - Infra Repo's node_group.tf gives every node a
+        # launch template with http_put_response_hop_limit = 2. The
+        # hardcoded vpcId went stale twice this session as the VPC got
+        # recreated with a new ID each time; letting the controller
+        # auto-detect it removes that failure mode entirely instead of
+        # continuing to patch a value that inherently can't stay current.
+        # If the controller ever fails to start again with a metadata
+        # timeout, re-verify the hop limit fix before reintroducing these.
   destination:
     server: https://kubernetes.default.svc
     namespace: kube-system
